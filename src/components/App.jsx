@@ -10,12 +10,16 @@ export class App extends Component {
   state = {
     cards: [],
     findImg: '',
-    page: 1,
+    page: 0,
     status: 'ok',
   };
 
+  componentDidUpdate(_, prevState) {
+    if (this.state.status === 'loading') this.fetchNewImg(this.state.findImg);
+  }
+
   fetchNewImg = findImg => {
-    fetchPixabay(findImg, this.state.page, PER_PAGE)
+    fetchPixabay(findImg, this.state.page + 1, PER_PAGE)
       .then(response => response.json())
       .then(cardsNew => {
         const arrImg = cardsNew.hits.map(
@@ -43,13 +47,11 @@ export class App extends Component {
   };
 
   changeFindImg = findImg => {
-    this.setState({ findImg, page: 1, cards: [], status: 'loading' });
-    this.fetchNewImg(findImg);
+    this.setState({ findImg, page: 0, cards: [], status: 'loading' });
   };
 
   onClickButtonMore = () => {
     this.setState({ status: 'loading' });
-    this.fetchNewImg(this.state.findImg);
   };
 
   render() {
@@ -57,7 +59,7 @@ export class App extends Component {
     return (
       <>
         <Searchbar onSubmit={this.changeFindImg} />
-        <ImageGallery cards={cards}></ImageGallery>
+        {cards.length !== 0 && <ImageGallery cards={cards}></ImageGallery>}
         {status === 'loading' && <Loader></Loader>}
         {cards.length !== 0 && status === 'ok' && (
           <Button handlClick={this.onClickButtonMore} />
