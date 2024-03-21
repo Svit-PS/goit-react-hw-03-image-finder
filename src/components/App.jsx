@@ -37,13 +37,12 @@ export class App extends Component {
           status: 'ok',
         }));
       })
-      .catch(
-        error =>
-          alert(
-            'Sorry, there are no images matching your search query. Please try again.'
-          )
-        // console.error()
-      );
+      .catch(error => {
+        alert(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        this.setState({ status: 'ok' });
+      });
   };
 
   changeFindImg = findImg => {
