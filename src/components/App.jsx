@@ -11,56 +11,66 @@ export class App extends Component {
     cards: [],
     findImg: '',
     page: 0,
-    status: 'ok',
+    loading: false,
   };
 
   componentDidUpdate(_, prevState) {
-    if (this.state.status === 'loading') this.fetchNewImg(this.state.findImg);
+    console.log('prevState: ', prevState);
+    console.log('State: ', this.state);
+
+    if (
+      this.state.page !== prevState.page ||
+      this.state.findImg !== prevState.findImg
+      //this.state.loading
+    )
+      this.fetchNewImg(this.state.findImg);
   }
 
   fetchNewImg = findImg => {
-    fetchPixabay(findImg, this.state.page + 1, PER_PAGE)
+    fetchPixabay(findImg, this.state.page, PER_PAGE)
       .then(response => response.json())
-      .then(cardsNew => {
-        const arrImg = cardsNew.hits.map(
-          ({ id, webformatURL, largeImageURL, tags }) => ({
-            id,
-            webformatURL,
-            largeImageURL,
-            tags,
-          })
-        );
-
-        this.setState(({ cards, page, status }) => ({
+      .then(data => {
+        if ((data.status = 'ok')) {
+          var arrImg = data.hits.map(
+            ({ id, webformatURL, largeImageURL, tags }) => ({
+              id,
+              webformatURL,
+              largeImageURL,
+              tags,
+            })
+          );
+        } else throw new Error(data.message);
+        this.setState(({ cards, page, loading }) => ({
           cards: [...cards, ...arrImg],
-          page: page + 1,
-          status: 'ok',
+          //page: page + 1,
+          loading: false,
         }));
       })
       .catch(error => {
         alert(
           'Sorry, there are no images matching your search query. Please try again.'
         );
-        this.setState({ status: 'ok' });
+        this.setState({ loading: false });
       });
+    // .finally(this.setState({ loading: false }));
   };
 
   changeFindImg = findImg => {
-    this.setState({ findImg, page: 0, cards: [], status: 'loading' });
+    this.setState({ findImg, page: 1, cards: [], loading: true });
   };
 
   onClickButtonMore = () => {
-    this.setState({ status: 'loading' });
+    this.setState(({ page, loading }) => ({ page: page + 1, loading: true }));
   };
 
   render() {
-    const { cards, status } = this.state;
+    const { cards, loading } = this.state;
     return (
       <>
         <Searchbar onSubmit={this.changeFindImg} />
         {cards.length !== 0 && <ImageGallery cards={cards}></ImageGallery>}
-        {status === 'loading' && <Loader></Loader>}
-        {cards.length !== 0 && status === 'ok' && (
+        {loading && <Loader></Loader>}
+        {cards.length !== 0 && !loading && (
           <Button handlClick={this.onClickButtonMore} />
         )}
       </>
