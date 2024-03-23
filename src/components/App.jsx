@@ -56,7 +56,9 @@ export class App extends Component {
   };
 
   changeFindImg = findImg => {
-    this.setState({ findImg, page: 1, cards: [], loading: true });
+    if (findImg !== this.state.findImg) {
+      this.setState({ findImg, page: 1, cards: [], loading: true });
+    }
   };
 
   onClickButtonMore = () => {
